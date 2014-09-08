@@ -1,0 +1,42 @@
+<DOCTYPE! html>
+<head>
+	<title><%=category.name%></title>
+	<link rel="stylesheet" type="text/css" href="/style.css">
+</head>
+
+<body>
+<h1><a href="/posts">The GradLaw Forum</a></h1>
+
+<nav>
+	<ul>
+		<li><a href="/posts">Posts</a></li>
+		<li><a href="/categories">Topics</a></li>
+		<li><a href="/archive">Archived Posts</a></li>
+	</ul>
+</nav>
+<h2><%=category.name%></h2>
+
+<h3><a href="/categories/<%=category.name%>/new">Create Post in this Topic</a></h3>
+
+<h4>Sort by: <a href="/categories/posts">most recent</a>, <a href="categories/posts/popular">most popular</a>, or <a href="/categories/<%=category.id%>/posts/active">most posted </a>to.</h4>
+
+	<% category.posts.each do |post| %>
+	<h3><a href="/posts/<%=post.id%>"><%= post.title %></a></h3>
+	<p>
+		<%=post.content[0..119]%>...<br>
+		<a href="/posts/<%=post.id%>"><%=post.comments.length%> Comments</a>
+		<div class="vote_box">
+			<form action="/posts/<%=post.id%>" method="POST">
+				<input type="hidden" name="_method" value="PUT" />
+				<input type="hidden" name="vote" value="up"/>
+				<button type="submit"><img src="http://www.clipartbest.com/cliparts/RcA/8A7/RcA8A7pcL.png" alt="Upvote"></button>
+			</form>
+			<%= post.votes%>
+			<form action="/posts/<%=post.id%>" method="POST">
+				<input type="hidden" name="_method" value="PUT" />
+				<input type="hidden" name="vote" value="down"/>
+				<button type="submit"><img src="http://www.clipartbest.com/cliparts/ncB/97r/ncB97rjcA.png" alt="Downvote"></button>
+			</form>
+		</div>
+	</p>
+	<% end %>

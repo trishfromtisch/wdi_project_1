@@ -1,10 +1,6 @@
 User Stories (MVP):
-A user can create a new category and add a description to it (think subreddits on reddit)
-A user can create a new forum post in a given category (/categories/category-name/posts/new)
-A user can delete a category if there are no posts associated with it
-A user can show (ie, see) a given forum post
-A user can see all of the forum's posts as a feed, up to a maximum of ten (/posts)
-A user can browse successive pages of ten posts each, until the beginning of the feed (/posts?id=id-of-first-post)
+
+
 A user can write a forum post as markdown and have it rendered as HTML
 A user can browse forum posts by category
 A user can "upvote" a forum post
@@ -22,17 +18,24 @@ get("/")
 	redirects to posts
 
 get("/posts")  
-	shows a feed of 10 
-	has a form to upvote, downvote, or create subscription
-	has a link called Comments that leads to "/posts/:id"
-	has a link to the post's category that links to get("/categories/:name/
+	shows a feed of 10 most recent posts
+	ea. post 
+		has a form to upvote, downvote, or create subscription
+		has a link called Comments that leads to "/posts/:id"
+		has a link to the post's category that links to "/categories/:name/"
+
+put("/posts")
+changes vote
  
 get("/posts?id=:id") 
 		shows the next page of 10 posts
 		has a form to upvote, downvote, or create subscription
+		has a link to the post's category that links to "/categories/:name/"
+		has a link called Comments that leads to "/posts/:id"
 
 get("/posts/:id")
-	shows individual post
+	shows individual post, links to category
+	has a form to upvote, downvote, or create subscription
 	shows comments
 	For active posts:
 		has a form to upvote, downvote, or create subscription
@@ -40,6 +43,9 @@ get("/posts/:id")
 	For expired posts:
 		show post on a different erb without form, says it's expired
 
+post("posts/:id")
+	creates comment
+	redirects to "/posts/:id"
 
 get("/categories") 
 	has a form to create a new category
@@ -64,9 +70,10 @@ get("/categories/:name/posts")
 get("/categories/:name/posts/new")
 	has a form that allows you to create a new post and set an expiration date belonging to that category
 
-
 post("/categories/:name/posts")
-	creates new post and redirects to "/categories/:name/posts"
+	creates new post 
+	redirects to get("/posts/:id")
+
 
 get("posts/archive") 
 	shows all expired posts
@@ -77,7 +84,9 @@ get("/most_popular/")
 
 post("/subscription")
 	creates new subscription
-	shows subscription confirmation page
+	shows confirmation page with back button
+
+	
 
 
 

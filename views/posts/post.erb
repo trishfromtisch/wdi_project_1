@@ -1,0 +1,67 @@
+<DOCTYPE! html>
+<head>
+	<title>Posts</title>
+	<link rel="stylesheet" type="text/css" href="/style.css">
+</head>
+
+<body>
+<h1><a href="/posts">The GradLaw Forum</a></h1>
+
+<nav>
+	<ul>
+		<li><a href="/posts">Posts</a></li>
+		<li><a href="/categories">Topics</a></li>
+		<li><a href="/archive">Archived Posts</a></li>
+	</ul>
+</nav>
+<h2><%= post.title %></h2>
+<h3>From: <a href="/categories/<%=post.category.name%>/posts"><%=post.category.name%></a></h3>
+<h4>by <a href="/authors/<%=author.id%>"><%=post.author.handle%></a></h4>
+<p><%=post.content%></p>
+<div class="vote_box">
+			<form action="/posts/<%=post.id%>" method="POST">
+				<input type="hidden" name="_method" value="PUT" />
+				<input type="hidden" name="vote" value="up"/>
+				<button type="submit"><img src="http://www.clipartbest.com/cliparts/RcA/8A7/RcA8A7pcL.png" alt="Upvote"></button>
+			</form>
+			<div><%= post.votes%></div>
+			<form action="/posts/<%=post.id%>" method="POST">
+				<input type="hidden" name="_method" value="PUT" />
+				<input type="hidden" name="vote" value="down"/>
+				<button type="submit"><img src="http://www.clipartbest.com/cliparts/ncB/97r/ncB97rjcA.png" alt="Downvote"></button>
+			</form>
+		</div>
+<h4>Comments:</h4>
+<ul>
+ <%post.comments.each do |comment|%>
+ <li><%=comment.content%><br>
+ 	Posted on: <%=comment.created_at%> by <a href="/authors/<%=author.id%>"><%=post.author.handle%></a>
+ 	<div class="vote_box">
+			<form action="/comments/<%=comment.id%>" method="POST">
+				<input type="hidden" name="_method" value="PUT" />
+				<input type="hidden" name="vote" value="up"/>
+				<button type="submit"><img src="http://www.clipartbest.com/cliparts/RcA/8A7/RcA8A7pcL.png" alt="Upvote"></button>
+			</form>
+			<%= comment.votes%>
+			<form action="/comments/<%=comment.id%>" method="POST">
+				<input type="hidden" name="_method" value="PUT" />
+				<input type="hidden" name="vote" value="down"/>
+				<button type="submit"><img src="http://www.clipartbest.com/cliparts/ncB/97r/ncB97rjcA.png" alt="Downvote"></button>
+			</form>
+		</div>
+ </li>
+ <%end%>
+</ul>
+<form action="/posts/<%=post.id%>/comment" method="POST">
+	<textarea rows="10" cols="100" name="content" placeholder="Enter comment here..."> </textarea><br>
+	<input type="radio" name="author_type" value="old">Select Author
+	<input type="radio" name="author_type" value="new">Add a New Author <br>
+	Select author:
+	<select name="id">
+		<%authors.each do |author|%>
+		<option value="<%=author.id%>"><%=author.handle%></option>
+		<%end%>
+	</select>
+	<input type="text" name="author" placeholder="New Author"/>
+<button>Comment</button>
+</form>

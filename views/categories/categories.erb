@@ -1,0 +1,87 @@
+<DOCTYPE! html>
+<head>
+	<title>Posts</title>
+	<link rel="stylesheet" type="text/css" href="/style.css">
+</head>
+
+<body>
+<h1><a href="/posts">The GradLaw Forum</a></h1>
+
+<nav>
+	<ul>
+		<li><a href="/posts">Posts</a></li>
+		<li><a href="/categories">Topics</a></li>
+		<li><a href="/archive">Archived Posts</a></li>
+	</ul>
+</nav>
+<h2>Topics</h2>
+<h4>Sort by: <a href="/categories">most recent</a> or <a href="/categories/popular">most popular</a>.</h4>
+
+<h3>Add New Topic</h3>
+<form action="/categories" method="POST">
+	<input type="text" size="85" maxlength="100" name="name" placeholder="Topic Name"/><br>
+	<textarea name="description" rows="2" cols="85" placeholder="Add a description of your new topic..."></textarea><br>
+	
+	<input type="radio" name="author_type" value="old">Select Author
+	<input type="radio" name="author_type" value="new">Add a New Author <br>
+	<select name="id">
+		<% authors.each do |author| %>
+		<option value="<%=author.id%>"><%=author.handle%></option>
+		<%end%>
+	</select>
+	<input type="text" name="author" placeholder="new author handle">
+	<button>Create</button>
+</form>
+
+<% categories.each do |category| %>
+	<h4><a href="/categories/<%=category.name%>/posts"><%=category.name%></a></h4>
+	<p><%= category.description[0..149]%>... <br>
+		Started by <a href="/authors/category.author.id"></a> <%=category.author.handle%><br>
+		<a href="/categories/<%=category.name%>/posts"><%= category.posts.length%></a>Posts
+		<% if category.posts.length == 0 %>
+		<form action="/categories/<%=category.id%>" method="POST">
+			<input type="hidden" name="_method" value="DELETE" />
+			<button>Delete</button>
+		</form>
+		<%end%>
+		<div class="vote_box">
+			<form action="/categories/<%=category.id%>" method="POST">
+				<input type="hidden" name="_method" value="PUT" />
+				<input type="hidden" name="vote" value="up"/>
+				<button type="submit"><img src="http://www.clipartbest.com/cliparts/RcA/8A7/RcA8A7pcL.png" alt="Upvote"></button>
+			</form>
+			<%= category.votes%>
+			<form action="/categories/<%=category.id%>" method="POST">
+				<input type="hidden" name="_method" value="PUT" />
+				<input type="hidden" name="vote" value="down"/>
+				<button type="submit"><img src="http://www.clipartbest.com/cliparts/ncB/97r/ncB97rjcA.png" alt="Downvote"></button>
+			</form>
+		</div>
+	</p>
+	<% end %>
+
+<% if request.params["page"].to_i == 1 || request.params["page"] == nil && Category.all.length > 11 %>
+	<form action="/categories" method="GET">
+	<input type="hidden" name="page" value="2" />
+	<button>Next Page</button>
+	</form>
+<% elsif request.params["page"].to_i > 1 && request.params["page"].to_i < (Category.all.length / 10) - 1 %>
+	<form action="/categories" method="GET">
+	<input type="hidden" name="page" value="<%=request.params['page'].to_i - 1%>" />
+	<button>Previous Page</button>
+	</form><br>
+	<form action="/categories" method="GET">
+	<input type="hidden" name="page" value="<%=request.params['page'].to_i + 1%>" />
+	<button>Next Page</button>
+	</form>
+<%elsif request.params["page"].to_i > 1 && request.params["page"].to_i > (Category.all.length / 10) - 1 %>
+	<form action="/categories" method="GET">
+	<input type="hidden" name="page" value="<%=request.params['page'].to_i - 1%>" />
+	<button>Previous Page</button>
+	</form>
+<%end%>
+
+
+
+
+
