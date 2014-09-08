@@ -16,11 +16,19 @@
 </nav>
 <h2><%=category.name%></h2>
 
-<h3><a href="/categories/<%=category.name%>/new">Create Post in this Topic</a></h3>
+<h3><a href="/categories/<%=category.name%>/new">Post to this Topic</a></h3>
 
-<h4>Sort by: <a href="/categories/posts">most recent</a>, <a href="categories/posts/popular">most popular</a>, or <a href="/categories/<%=category.id%>/posts/active">most posted </a>to.</h4>
+<h4>Sort Posts by:</h4>
+<form action="/categories/<%=category.name%>/posts" method="GET">
+	<select name="view">
+		<option value="recent">Most Recent</option>
+		<option value="ranking">Votes</option>
+		<option value="active">Most Posts</option>
+	</select>
+	<button>Sort</button>
+</form>
 
-	<% category.posts.each do |post| %>
+	<% posts.each do |post| %>
 	<h3><a href="/posts/<%=post.id%>"><%= post.title %></a></h3>
 	<p>
 		<%=post.content[0..119]%>...<br>
@@ -40,3 +48,24 @@
 		</div>
 	</p>
 	<% end %>
+
+<% if request.params["page"].to_i == 1 || request.params["page"] == nil && category.posts.length > 11 %>
+	<form action="/categories" method="GET">
+	<input type="hidden" name="page" value="2" />
+	<button>Next Page</button>
+	</form>
+<% elsif request.params["page"].to_i > 1 && request.params["page"].to_i < (category.posts.length / 10) - 1 %>
+	<form action="/categories" method="GET">
+	<input type="hidden" name="page" value="<%=request.params['page'].to_i - 1%>" />
+	<button>Previous Page</button>
+	</form><br>
+	<form action="/categories" method="GET">
+	<input type="hidden" name="page" value="<%=request.params['page'].to_i + 1%>" />
+	<button>Next Page</button>
+	</form>
+<%elsif request.params["page"].to_i > 1 && request.params["page"].to_i > (category.posts.length / 10) - 1 %>
+	<form action="/categories" method="GET">
+	<input type="hidden" name="page" value="<%=request.params['page'].to_i - 1%>" />
+	<button>Previous Page</button>
+	</form>
+<%end%>

@@ -14,7 +14,15 @@
 	</ul>
 </nav>
 
-<h4>Sort by: <a href="/posts">most recent</a> or <a href="/posts/popular">most popular</a>.</h4>
+<h4>Sort by:</h4>
+<form action="/posts" method="GET">
+	<select name="view">
+		<option value="recent">Most Recent</option>
+		<option value="ranking">Votes</option>
+		<option value="active">Most Comments</option>
+	</select>
+	<button>Sort</button>
+</form>
 
 	<% posts.each do |post| %>
 	<h3><a href="/posts/<%=post.id%>"><%= post.title %></a><span> in <a href="/categories/<%=post.category.name%>/posts"><%=post.category.name%></a></span></h3>

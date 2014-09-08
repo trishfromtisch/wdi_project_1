@@ -15,7 +15,15 @@
 	</ul>
 </nav>
 <h2>Topics</h2>
-<h4>Sort by: <a href="/categories">most recent</a> or <a href="/categories/popular">most popular</a>.</h4>
+<h4>Sort by:</h4>
+<form action="/categories" method="GET">
+	<select name="view">
+		<option value="recent">Most Recent</option>
+		<option value="ranking">Votes</option>
+		<option value="active">Most Posts</option>
+	</select>
+	<button>Sort</button>
+</form>
 
 <h3>Add New Topic</h3>
 <form action="/categories" method="POST">
@@ -23,13 +31,13 @@
 	<textarea name="description" rows="2" cols="85" placeholder="Add a description of your new topic..."></textarea><br>
 	
 	<input type="radio" name="author_type" value="old">Select Author
-	<input type="radio" name="author_type" value="new">Add a New Author <br>
 	<select name="id">
-		<% authors.each do |author| %>
+		<%authors.each do |author|%>
 		<option value="<%=author.id%>"><%=author.handle%></option>
 		<%end%>
-	</select>
-	<input type="text" name="author" placeholder="new author handle">
+	</select><br>
+	<input type="radio" name="author_type" value="new">Add a New Author <br>
+	<input type="text" name="author" placeholder="New Author Handle"/> <br>
 	<button>Create</button>
 </form>
 

@@ -1,0 +1,44 @@
+<DOCTYPE! html>
+<head>
+	<title>New <%=category.name%> Post</title>
+	<link rel="stylesheet" type="text/css" href="/style.css">
+</head>
+
+<body>
+<h1><a href="/posts">The GradLaw Forum</a></h1>
+
+<nav>
+	<ul>
+		<li><a href="/posts">Posts</a></li>
+		<li><a href="/categories">Topics</a></li>
+		<li><a href="/archive">Archived Posts</a></li>
+	</ul>
+</nav>
+<h2><%=category.name%></h2>
+
+<h3>Write a New Post</h3>
+
+<form action="/categories/<%=category.name%>/new" method="POST">
+	<input type="text" name="title" size="85" maxlength="100"placeholder="Title">
+	<textarea name="content" rows="15" cols="125" placeholder="Enter post here..."></textarea><br>
+	<input type="radio" name="author_type" value="old">Select Author
+	<select name="id">
+		<%authors.each do |author|%>
+		<option value="<%=author.id%>"><%=author.handle%></option>
+		<%end%>
+	</select><br>
+	<input type="radio" name="author_type" value="new">Add a New Author <br>
+	<input type="text" name="author" placeholder="New Author Handle"/> <br>
+	
+	Want to give your post a lifespan?
+	<input type="radio" name="give_expiration" value="yes">Yes
+	<select name="lifespan">
+		<option value="3 months">3 Months</option>
+		<option value="1 month">1 Month</option>
+		<option value="2 weeks">2 Weeks</option>
+		<option value="1 week">1 Week</option>
+	</select>
+
+	<input type="radio" name="give_expiration" value="no">No<br>
+	<button>Post</button>
+</form>

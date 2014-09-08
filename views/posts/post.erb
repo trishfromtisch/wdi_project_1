@@ -16,7 +16,7 @@
 </nav>
 <h2><%= post.title %></h2>
 <h3>From: <a href="/categories/<%=post.category.name%>/posts"><%=post.category.name%></a></h3>
-<h4>by <a href="/authors/<%=author.id%>"><%=post.author.handle%></a></h4>
+<h4>by <a href="/authors/<%=post.author.id%>"><%=post.author.handle%></a></h4>
 <p><%=post.content%></p>
 <div class="vote_box">
 			<form action="/posts/<%=post.id%>" method="POST">
@@ -31,11 +31,34 @@
 				<button type="submit"><img src="http://www.clipartbest.com/cliparts/ncB/97r/ncB97rjcA.png" alt="Downvote"></button>
 			</form>
 		</div>
+
 <h4>Comments:</h4>
+<h5>Write Your Own</h5>
+<form action="/posts/<%=post.id%>/comment" method="POST">
+	<textarea rows="5" cols="100" name="content" placeholder="Enter comment here..."> </textarea><br>
+	<input type="radio" name="author_type" value="old">Select Author
+	<select name="id">
+		<%authors.each do |author|%>
+		<option value="<%=author.id%>"><%=author.handle%></option>
+		<%end%>
+	</select><br>
+	<input type="radio" name="author_type" value="new">Add a New Author <br>
+	<input type="text" name="author" placeholder="New Author Handle"/> <br>
+<button>Comment</button>
+</form>
+
+<h5>Sort Comments by:</h5>
+<form action="/posts/<%=post.id%>" method="GET">
+	<select name="view">
+		<option value="recent">Most Recent</option>
+		<option value="ranking">Votes</option>
+	</select>
+	<button>Sort</button>
+</form>
 <ul>
- <%post.comments.each do |comment|%>
+ <%comments.each do |comment|%>
  <li><%=comment.content%><br>
- 	Posted on: <%=comment.created_at%> by <a href="/authors/<%=author.id%>"><%=post.author.handle%></a>
+ 	Posted on: <%=comment.created_at%> by <a href="/authors/<%=comment.author.id%>"><%=comment.author.handle%></a>
  	<div class="vote_box">
 			<form action="/comments/<%=comment.id%>" method="POST">
 				<input type="hidden" name="_method" value="PUT" />
@@ -52,16 +75,4 @@
  </li>
  <%end%>
 </ul>
-<form action="/posts/<%=post.id%>/comment" method="POST">
-	<textarea rows="10" cols="100" name="content" placeholder="Enter comment here..."> </textarea><br>
-	<input type="radio" name="author_type" value="old">Select Author
-	<input type="radio" name="author_type" value="new">Add a New Author <br>
-	Select author:
-	<select name="id">
-		<%authors.each do |author|%>
-		<option value="<%=author.id%>"><%=author.handle%></option>
-		<%end%>
-	</select>
-	<input type="text" name="author" placeholder="New Author"/>
-<button>Comment</button>
-</form>
+
