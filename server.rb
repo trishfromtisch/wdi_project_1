@@ -29,13 +29,11 @@ get("/posts") do
 	end
 
 	if params["view"] == "recent" || params["view"] == nil
-		posts = Post.all.order(id: :desc).paginate(:page => page, :per_page => 10)
+		posts = Post.order(id: :desc).paginate(:page => page, :per_page => 10)
  	elsif params["view"] == "ranking"
-		posts = Post.all.order(votes: :desc).paginate(:page => page, :per_page => 10)
+		posts = Post.order(votes: :desc).paginate(:page => page, :per_page => 10)
 	else
-		posts = Post.all
-		posts = posts.sort_by {|post| -post.comments.length}
-		posts = posts.paginate(:page => page, :per_page => 10)
+		posts = Post.order(comment_tally: :desc).paginate(:page => page, :per_page => 10)
  	end
 
  	erb(:"posts/posts", {locals: {posts: posts}})
@@ -73,12 +71,18 @@ post("/posts/:id/comment") do
 		author = Author.find_by(id: params["id"])
 	end
 
+	
 	Comment.create({
 		content: params["content"],
 		post_id: params[:id],
 		author_id: author.id,
 		votes: 0
 		})
+
+	post = Post.find_by(id: params[:id])
+	new_tally = post.comment_tally + 1
+	post.update(comment_tally: new_tally)
+
 	redirect request.referer
 end
 
@@ -126,7 +130,8 @@ post("/categories") do
 		description: params["description"],
 		author_id: author.id,
 		votes: 0,
-		has_post: false
+		has_post: false,
+		post_tally: 0
 		})
 	redirect request.referer
 end 
@@ -151,35 +156,19 @@ end
 
 get("/categories/:name/posts") do 
 	category = Category.find_by(name: params[:name])
-	posts = category.posts
+
 	if params["page"] == nil
 		page = 1
 	else
 		page = params["page"].to_i
 	end
 
-	posts_with_comments = []
-	other_posts=[]
-	posts.each do |post|
-		if post.comments.length > 0
-			posts_with_comments << post
-		else
-			other_posts << post
-		end
-	end
-	posts_with_comments = posts_with_comments.sort_by {|post| - post.comments.length}
-	total_posts  = []
-	posts_with_comments.each {|post| total_posts << post}
-	other_posts.each {|post| total_posts << post}
-
-
-
 	if params["view"] == nil || params["view"] == "recent"
-		posts = posts.order(id: :desc).paginate(:page => page, :per_page => 10)
+		posts = category.posts.order(id: :desc).paginate(:page => page, :per_page => 10)
  	elsif params["view"] == "ranking"
-		posts = posts.order(votes: :desc).paginate(:page => page, :per_page => 10)
+		posts = category.posts.order(votes: :desc).paginate(:page => page, :per_page => 10)
 	elsif params["view"] == "active"
-		total_posts.paginate(:page => page, :per_page => 10)
+		posts = category.posts.order(comment_tally: :desc).paginate(:page => page, :per_page => 10)
  	end
 	erb(:"categories/category", {locals: {category: category, posts: posts}})
 end
@@ -221,16 +210,51 @@ post("/categories/:name/new") do
 		votes: 0,
 		author_id: author.id,
 		expiration: expiration,
-		category_id: category.id
+		category_id: category.id,
+		comment_tally: 0
 		})
+	
+	new_tally = category.post_tally + 1
+	category.update(post_tally: new_tally)
 
 	redirect "/categories/#{category.name}/posts"
 end
 
-get("authors/:id") do
+get("/authors/:id") do
 	author = Author.find_by(id: params[:id])
-	erb(:"authors/author", {locals: {author: author}})
+
+	if params["sort_kind"] == "category"
+		if params["view"] == nil || params["view"] == "recent"
+			categories = author.categories.order(id: :desc)
+	 	elsif params["view"] == "ranking"
+			categories = author.categories.order(votes: :desc)
+		elsif params["view"] == "active"
+			categories = author.categories.order(comment_tally: :desc)
+		end
+ 	elsif params["sort_kind"] == "post"
+		if params["view"] == nil || params["view"] == "recent"
+			posts = author.posts.order(id: :desc)
+	 	elsif params["view"] == "ranking"
+			posts = author.posts.order(votes: :desc)
+		elsif params["view"] == "active"
+			posts = author.posts.order(comment_tally: :desc)
+		end
+	elsif params["sort_kind"] == "nil"
+		categories = author.categories.order(id: :desc)
+		posts = author.posts.order(comment_tally: :desc)
+	end
+	 
+	erb(:"authors/author", {locals: {author: author, categories: categories, posts: posts}})
 end
+
+post("/subscribe/:kind/:id/") do
+	Subscriber.create({
+		email: params["email"],
+		kind: params[:kind],
+		foreign_id: params[:id]
+		})
+	redirect request.referer
+end 
 
 
 # 	shows individual post, links to category

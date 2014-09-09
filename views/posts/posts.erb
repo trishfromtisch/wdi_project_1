@@ -28,6 +28,7 @@
 	<h3><a href="/posts/<%=post.id%>"><%= post.title %></a><span> in <a href="/categories/<%=post.category.name%>/posts"><%=post.category.name%></a></span></h3>
 	<p>
 		<%=post.content[0..119]%>...<br>
+		Posted by <a href="/authors/<%=post.author_id%>"><%=post.author.handle%></a>
 		<a href="/posts/<%=post.id%>"><%=post.comments.length%> Comments</a>
 		<div class="vote_box">
 			<form action="/posts/<%=post.id%>" method="POST">
@@ -42,6 +43,12 @@
 				<button type="submit"><img src="http://www.clipartbest.com/cliparts/ncB/97r/ncB97rjcA.png" alt="Downvote"></button>
 			</form>
 		</div>
+
+		<form action="/subscribe/post/<%=post.id%>/" method="POST">
+			<input type="text" name="email" placeholder="E-mail Address"/>
+			<button type="submit">Subscribe</button>
+		</form>
+		<span><%=post.subscribers.length%> </span> Subscribers
 	</p>
 	<% end %>
 
