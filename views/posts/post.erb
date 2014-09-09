@@ -37,12 +37,13 @@
 <form action="/posts/<%=post.id%>/comment" method="POST">
 	<textarea rows="5" cols="100" name="content" placeholder="Enter comment here..."> </textarea><br>
 	<input type="radio" name="author_type" value="old">Select Author
-	<select name="id">
+	<select name="author_id">
 		<%authors.each do |author|%>
+		binding.pry
 		<option value="<%=author.id%>"><%=author.handle%></option>
 		<%end%>
 	</select><br>
-	<input type="radio" name="author_type" value="new">Add a New Author <br>
+	<input type="radio" name="author_type" value="new">Add a New Author
 	<input type="text" name="author" placeholder="New Author Handle"/> <br>
 <button>Comment</button>
 </form>

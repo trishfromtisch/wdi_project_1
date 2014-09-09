@@ -36,6 +36,15 @@ get("/posts") do
 		posts = Post.order(comment_tally: :desc).paginate(:page => page, :per_page => 10)
  	end
 
+ 	active_posts = []
+ 	posts.each do |post|
+ 		if post.expiration.to_i > DateTime.now.to_i
+ 			active_posts << post
+ 		end
+ 	end
+
+ 	posts = active_posts
+
  	erb(:"posts/posts", {locals: {posts: posts}})
  end
 
@@ -65,23 +74,30 @@ get("/posts/:id") do
 end
 
 post("/posts/:id/comment") do
+	post = Post.find_by(id: params[:id])
+	
 	if params["author_type"] == "new"
 		author = Author.create({handle: params["author"]})
-	else
-		author = Author.find_by(id: params["id"])
+	elsif params["author_type"] == "old"
+		author = Author.find_by(id: params["author_id"])
 	end
 
 	
-	Comment.create({
+	comment = Comment.create({
 		content: params["content"],
-		post_id: params[:id],
+		post_id: post.id,
 		author_id: author.id,
 		votes: 0
 		})
 
-	post = Post.find_by(id: params[:id])
 	new_tally = post.comment_tally + 1
 	post.update(comment_tally: new_tally)
+
+	if post.subscribers != nil
+		post.subscribers.each do |subscriber|
+		subscriber.send_post_email(post.title, comment.content, comment.author.handle)
+		end
+	end
 
 	redirect request.referer
 end
@@ -105,13 +121,11 @@ get("/categories") do
 	end
 
 	if params["view"] == "recent" || params["view"] == nil
-		categories = Category.all.order(id: :desc).paginate(:page => page, :per_page => 10)
+		categories = Category.order(id: :desc).paginate(:page => page, :per_page => 10)
  	elsif params["view"] == "ranking"
-		categories = Category.all.order(votes: :desc).paginate(:page => page, :per_page => 10)
+		categories = Category.order(votes: :desc).paginate(:page => page, :per_page => 10)
 	else
-		categories = Category.all
-		categories = categories.sort_by {|category| -categories.posts.length}
-		categories = categories.paginate(:page => page, :per_page => 10)
+		categories = Category.order(post_tally: :desc).paginate(:page => page, :per_page => 10)
  	end
 
 	authors = Author.all
@@ -121,8 +135,8 @@ end
 post("/categories") do
 	if params["author_type"] == "new"
 		author = Author.create({handle: params["author"]})
-	else
-		author = Author.find_by(id: params["id"])
+	elsif params["author_type"] == "old"
+		author = Author.find_by(id: params["author_id"])
 	end
 
 	Category.create({
@@ -204,7 +218,7 @@ post("/categories/:name/new") do
 		expiration = "294275-12-31 23:59:01 UTC"
 	end
 
-	Post.create({
+	post = Post.create({
 		content: params["content"],
 		title: params["title"],
 		votes: 0,
@@ -217,13 +231,27 @@ post("/categories/:name/new") do
 	new_tally = category.post_tally + 1
 	category.update(post_tally: new_tally)
 
+	if category.subscribers != nil
+		category.subscribers.each do |subscriber|
+		subscriber.send_category_email(category.title, post.content, post.author.handle)
+		end
+	end
+
 	redirect "/categories/#{category.name}/posts"
 end
 
 get("/authors/:id") do
 	author = Author.find_by(id: params[:id])
 
-	if params["sort_kind"] == "category"
+	if params["sort_kind"] == nil && author.categories.length == 0
+		posts = author.posts.order(id: :desc)
+	elsif params["sort_kind"] == nil && author.posts.length == 0
+		categories = author.categories.order(id: :desc)
+	elsif params["sort_kind"] == nil && author.categories.length >= 1 && author.posts.length >= 1
+		categories = author.categories.order(id: :desc)
+		posts = author.posts.order(id: :desc)
+	elsif 	
+		params["sort_kind"] == "category"
 		if params["view"] == nil || params["view"] == "recent"
 			categories = author.categories.order(id: :desc)
 	 	elsif params["view"] == "ranking"
@@ -239,12 +267,16 @@ get("/authors/:id") do
 		elsif params["view"] == "active"
 			posts = author.posts.order(comment_tally: :desc)
 		end
-	elsif params["sort_kind"] == "nil"
-		categories = author.categories.order(id: :desc)
-		posts = author.posts.order(comment_tally: :desc)
 	end
-	 
-	erb(:"authors/author", {locals: {author: author, categories: categories, posts: posts}})
+	
+	if author.categories.length == 0 && author.posts.length >= 1
+		erb(:"authors/author", {locals: {author: author, posts: posts}})
+	elsif author.categories.length >= 1 && author.posts.length == 0
+		erb(:"authors/author", {locals: {author: author, categories: categories}})
+	else 
+		erb(:"authors/author", {locals: {author: author, posts: posts, categories: categories}})
+	end
+
 end
 
 post("/subscribe/:kind/:id/") do
@@ -254,14 +286,17 @@ post("/subscribe/:kind/:id/") do
 		foreign_id: params[:id]
 		})
 	redirect request.referer
-end 
+end
 
+get("/archive") do 
+	if params["view"] == nil || params["view"] == "recent"
+		posts = Post.order(id: :desc).paginate(:page => page, :per_page => 10)
+ 	elsif params["view"] == "ranking"
+		posts = Post.order(votes: :desc).paginate(:page => page, :per_page => 10)
+	elsif params["view"] == "active"
+		posts = Post.order(comment_tally: :desc).paginate(:page => page, :per_page => 10)
+ 	end
 
-# 	shows individual post, links to category
-# 	has a form to upvote, downvote, or create subscription
-# 	shows comments
-# 	For active posts:
-# 		has a form to upvote, downvote, or create subscription
-# 		has a form to comment
-# 	For expired posts:
-# 		show post on a different erb without form, says it's expired
+	erb(:archive, {locals: {posts: posts}})
+end
+

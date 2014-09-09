@@ -31,7 +31,7 @@
 	<textarea name="description" rows="2" cols="85" placeholder="Add a description of your new topic..."></textarea><br>
 	
 	<input type="radio" name="author_type" value="old">Select Author
-	<select name="id">
+	<select name="author_id">
 		<%authors.each do |author|%>
 		<option value="<%=author.id%>"><%=author.handle%></option>
 		<%end%>

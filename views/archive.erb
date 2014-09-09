@@ -1,0 +1,68 @@
+<DOCTYPE! html>
+<head>
+	<title>Posts</title>
+	<link rel="stylesheet" type="text/css" href="/style.css">
+</head>
+
+<body>
+<h1><a href="/posts">The GradLaw Forum</a></h1>
+
+<nav>
+	<ul>
+		<li><a href="/posts">Posts</a></li>
+		<li><a href="/categories">Topics</a></li>
+	</ul>
+</nav>
+<h2>Archive</h2>
+<h4>Sort by:</h4>
+<form action="/posts" method="GET">
+	<select name="view">
+		<option value="recent">Most Recent</option>
+		<option value="ranking">Votes</option>
+		<option value="active">Most Comments</option>
+	</select>
+	<button>Sort</button>
+
+
+</form>
+
+<% posts.each do |post| %>
+	<% if post.expiration.to_i > DateTime.now.to_i %>
+			<h3><a href="/posts/<%=post.id%>"><%= post.title %></a><span> in <a href="/categories/<%=post.category.name%>/posts"><%=post.category.name%></a></span></h3>
+		<p>
+			<%=post.content[0..119]%>...<br>
+			Posted by <a href="/authors/<%=post.author_id%>"><%=post.author.handle%></a>
+			<a href="/posts/<%=post.id%>"><%=post.comments.length%> Comments</a>
+			<div class="vote_box">
+				<form>
+					<button><img src="http://www.clipartbest.com/cliparts/RcA/8A7/RcA8A7pcL.png" alt="Upvote"></button>
+				</form>
+				<%= post.votes%>
+				<form>
+					<button><img src="http://www.clipartbest.com/cliparts/ncB/97r/ncB97rjcA.png" alt="Downvote"></button>
+				</form>
+			</div>
+		<%end%>
+	<% end %>
+
+
+<% if request.params["page"].to_i == 1 || request.params["page"] == nil && Post.all.length > 11 %>
+	<form action="/posts" method="GET">
+	<input type="hidden" name="page" value="2" />
+	<button>Next Page</button>
+	</form>
+<% elsif request.params["page"].to_i > 1 && request.params["page"].to_i < (Post.all.length / 10) - 1 %>
+	<form action="/posts" method="GET">
+	<input type="hidden" name="page" value="<%=request.params['page'].to_i - 1%>" />
+	<button>Previous Page</button>
+	</form><br>
+	<form action="/posts" method="GET">
+	<input type="hidden" name="page" value="<%=request.params['page'].to_i + 1%>" />
+	<button>Next Page</button>
+	</form>
+<%elsif request.params["page"].to_i > 1 && request.params["page"].to_i > (Post.all.length / 10) - 1 %>
+	<form action="/posts" method="GET">
+	<input type="hidden" name="page" value="<%=request.params['page'].to_i - 1%>" />
+	<button>Previous Page</button>
+	</form>
+<%end%>
