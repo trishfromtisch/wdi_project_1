@@ -36,15 +36,6 @@ get("/posts") do
 		posts = Post.order(comment_tally: :desc).paginate(:page => page, :per_page => 10)
  	end
 
- 	active_posts = []
- 	posts.each do |post|
- 		if post.expiration.to_i > DateTime.now.to_i
- 			active_posts << post
- 		end
- 	end
-
- 	posts = active_posts
-
  	erb(:"posts/posts", {locals: {posts: posts}})
  end
 
